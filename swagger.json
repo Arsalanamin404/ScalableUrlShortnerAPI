@@ -1,0 +1,98 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/url": {
+      "post": {
+        "operationId": "UrlController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUrlDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Short URL created successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          }
+        },
+        "summary": "Create a short URL",
+        "tags": [
+          "URL"
+        ]
+      }
+    },
+    "/api/v1/url/{code}": {
+      "get": {
+        "operationId": "UrlController_resolve",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "description": "Short code of the URL",
+            "schema": {
+              "example": "abc123",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Original URL returned"
+          },
+          "404": {
+            "description": "URL not found or expired"
+          }
+        },
+        "summary": "Resolve short URL to original URL",
+        "tags": [
+          "URL"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "URL Shortener API",
+    "description": "Production-grade URL shortener with Redis caching",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "url",
+      "description": ""
+    }
+  ],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "CreateUrlDto": {
+        "type": "object",
+        "properties": {
+          "longUrl": {
+            "type": "string",
+            "example": "https://google.com",
+            "description": "The original long URL to shorten"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-12-31T23:59:59.000Z",
+            "description": "Optional expiration date of the short URL"
+          }
+        },
+        "required": [
+          "longUrl"
+        ]
+      }
+    }
+  }
+}
