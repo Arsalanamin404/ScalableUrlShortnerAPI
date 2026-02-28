@@ -8,6 +8,7 @@ import {
   ApiParam,
   ApiBody,
 } from '@nestjs/swagger';
+import { RateLimit } from '../../common/rate-limit/rate-limit.decorator.js';
 
 @ApiTags('URL')
 @Controller('url')
@@ -15,6 +16,7 @@ export class UrlController {
   constructor(private readonly service: UrlService) { }
 
   @Post()
+  @RateLimit({ duration: 60, limit: 10 })
   @ApiOperation({ summary: 'Create a short URL' })
   @ApiBody({ type: CreateUrlDto })
   @ApiResponse({
