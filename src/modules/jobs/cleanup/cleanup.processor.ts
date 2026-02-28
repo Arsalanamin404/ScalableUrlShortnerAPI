@@ -1,7 +1,7 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
-import { RedisService } from '../../common/redis/redis.service.js';
-import { PrismaService } from '../../prisma/prisma.service.js';
+import { RedisService } from '../../../common/redis/redis.service.js';
+import { PrismaService } from '../../../prisma/prisma.service.js';
 import { CLEANUP_EXPIRED_URL_JOB, CLEANUP_QUEUE } from './cleanup.constants.js';
 import { Worker } from 'bullmq';
 
