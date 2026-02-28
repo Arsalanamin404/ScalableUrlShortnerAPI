@@ -6,7 +6,7 @@ import { CLEANUP_EXPIRED_URL_JOB, CLEANUP_QUEUE } from './cleanup.constants.js';
 
 @Injectable()
 export class CleanupProducer implements OnModuleInit, OnModuleDestroy {
-  private queue: Queue;
+  private cleanupQueue: Queue;
   private scheduler: JobScheduler;
 
   constructor(
@@ -19,14 +19,14 @@ export class CleanupProducer implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     const connection = this.redis.getBullClient();
 
-    this.queue = new Queue(CLEANUP_QUEUE, {
+    this.cleanupQueue = new Queue(CLEANUP_QUEUE, {
       connection,
     });
 
     this.scheduler = new JobScheduler(CLEANUP_QUEUE, { connection });
 
     await this.scheduler.waitUntilReady();
-    await this.queue.add(
+    await this.cleanupQueue.add(
       CLEANUP_EXPIRED_URL_JOB,
       {},
       {
@@ -46,7 +46,7 @@ export class CleanupProducer implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleDestroy() {
-    await this.queue?.close();
+    await this.cleanupQueue?.close();
     await this.scheduler?.close();
     this.logger.info('Cleanup producer queue closed');
   }
