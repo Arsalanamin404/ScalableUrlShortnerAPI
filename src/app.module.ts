@@ -5,6 +5,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { RedisModule } from './common/redis/redis.module.js';
 import envConfig from './config/env.config.js';
 import { LoggerModule } from 'nestjs-pino';
+import { RateLimitModule } from './common/rate-limit/rate-limit.module.js';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { LoggerModule } from 'nestjs-pino';
     UrlModule,
     PrismaModule,
     RedisModule,
+    RateLimitModule,
   ],
   controllers: [],
   providers: [],

@@ -15,26 +15,12 @@ A backend service for shortening URLs, built with **NestJS + Prisma + PostgreSQL
 
 ---
 
-### 1. NanoID-based Short Code
+### NanoID-based Short Code
 
 - Random, URL-safe IDs
 - Length: `7`
 - Requires collision handling
 
-### 2. Collision Handling 
+### Rate Limiting
 
-Handled using retry + DB constraint:
-
-```ts
-for (let attempt = 0; attempt < 5; attempt++) {
-  try {
-    // insert
-  } catch (err) {
-    // retry on unique constraint (P2002)
-  }
-}
-```
-
----
-
-## Current Flow
+To ensure scalability and protect the system from abuse, the API implements distributed rate limiting using Redis. It uses a fixed-window algorithm via `rate-limiter-flexible`, where each request is tracked using a unique key based on user ID or IP along with the route. Each key has a defined limit (number of requests) and duration (time window). On every request, the counter is decremented, and once the limit is exceeded, further requests are blocked with an HTTP 429 response until the key expires. Redis handles this with atomic operations and automatic TTL-based cleanup, ensuring consistency across multiple instances. Strict rate limits are applied to write-heavy endpoints like URL creation to prevent spam, while read-heavy endpoints like URL resolution are kept less restrictive to support high traffic.
