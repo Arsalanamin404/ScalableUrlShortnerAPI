@@ -19,7 +19,7 @@ export class CleanupProcessor implements OnModuleInit, OnModuleDestroy {
   }
 
   onModuleInit() {
-    const connection = this.redis.getBullClient();
+    const connection = this.redis.getBullConfig();
     this.worker = new Worker(
       CLEANUP_QUEUE,
       async (job) => {

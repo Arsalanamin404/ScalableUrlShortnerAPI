@@ -7,7 +7,6 @@ import { PinoLogger } from 'nestjs-pino';
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   private client: RedisClient;
-  private bullClient: RedisClient;
 
   constructor(
     private readonly logger: PinoLogger,
@@ -20,12 +19,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     this.client = new (Redis as any)({
       host: this.config.getOrThrow<string>('REDIS_HOST'),
       port: this.config.getOrThrow<number>('REDIS_PORT'),
-    });
-
-    this.bullClient = new (Redis as any)({
-      host: this.config.getOrThrow<string>('REDIS_HOST'),
-      port: this.config.getOrThrow<number>('REDIS_PORT'),
-      maxRetriesPerRequest: null,
+      maxRetriesPerRequest: 3,
     });
 
     this.client.on('connect', () => {
@@ -44,7 +38,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {
     try {
       await this.client.quit();
-      await this.bullClient.quit();
       this.logger.info('Redis connection closed gracefully');
     } catch (err: unknown) {
       this.logger.error({ err }, 'Error closing Redis connection');
@@ -55,8 +48,12 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     return this.client;
   }
 
-  getBullClient() {
-    return this.bullClient;
+  getBullConfig() {
+    return {
+      host: this.config.getOrThrow<string>('REDIS_HOST'),
+      port: this.config.getOrThrow<number>('REDIS_PORT'),
+      maxRetriesPerRequest: null,
+    };
   }
 
   async set<T = any>(

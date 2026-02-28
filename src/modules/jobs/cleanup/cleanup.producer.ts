@@ -17,7 +17,7 @@ export class CleanupProducer implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit() {
-    const connection = this.redis.getBullClient();
+    const connection = this.redis.getBullConfig();
 
     this.cleanupQueue = new Queue(CLEANUP_QUEUE, {
       connection,
