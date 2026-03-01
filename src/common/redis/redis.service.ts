@@ -48,14 +48,6 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     return this.client;
   }
 
-  getBullConfig() {
-    return {
-      host: this.config.getOrThrow<string>('REDIS_HOST'),
-      port: this.config.getOrThrow<number>('REDIS_PORT'),
-      maxRetriesPerRequest: null,
-    };
-  }
-
   async set<T = any>(
     key: string,
     value: T,
