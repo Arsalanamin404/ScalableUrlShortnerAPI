@@ -8,6 +8,9 @@ import { LoggerModule } from 'nestjs-pino';
 import { RateLimitModule } from './common/rate-limit/rate-limit.module.js';
 import { JobsModule } from './common/jobs/jobs.module.js';
 import { BullConfig } from './common/redis/bull.config.js';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter.js';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
 
 @Module({
   imports: [
@@ -17,38 +20,13 @@ import { BullConfig } from './common/redis/bull.config.js';
     }),
     LoggerModule.forRoot({
       pinoHttp: {
-        level: 'info',
-        transport: {
-          targets: [
-            // Console logs
-            {
-              target: 'pino-pretty',
-              options: {
-                colorize: true,
-              },
-            },
-
-            // All logs
-            {
-              level: 'info',
-              target: 'pino/file',
-              options: {
-                destination: './logs/app.log',
-                mkdir: true,
-              },
-            },
-
-            // Errors only
-            {
-              level: 'error',
-              target: 'pino/file',
-              options: {
-                destination: './logs/error.log',
-                mkdir: true,
-              },
-            },
-          ],
-        },
+        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? {
+                target: 'pino-pretty',
+              }
+            : undefined,
       },
     }),
     UrlModule,
@@ -59,6 +37,15 @@ import { BullConfig } from './common/redis/bull.config.js';
     BullConfig,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
+  ],
 })
 export class AppModule {}

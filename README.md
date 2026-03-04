@@ -6,7 +6,7 @@ A production-grade backend service for shortening URLs, built with **NestJS + Pr
 
 ## System Architecture
 
-```
+``` bash
 Client → API (NestJS)
         ↓
      Redis (Cache + Queue)
@@ -83,7 +83,7 @@ The system uses BullMQ for asynchronous job processing to offload heavy operatio
 
 ### Architecture
 
-```
+```bash
 Producer → Redis Queue → Worker (Processor)
 ```
 
