@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
 import { UrlService } from './url.service.js';
 import { CreateUrlDto } from './dto/create-url.dto.js';
 import {
@@ -9,11 +9,12 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { RateLimit } from '../../common/rate-limit/rate-limit.decorator.js';
+import type { Response } from 'express';
 
 @ApiTags('URL')
 @Controller('url')
 export class UrlController {
-  constructor(private readonly service: UrlService) { }
+  constructor(private readonly service: UrlService) {}
 
   @Post()
   @RateLimit({ duration: 60, limit: 10 })
@@ -39,7 +40,7 @@ export class UrlController {
   }
 
   @Get(':code')
-  @ApiOperation({ summary: 'Resolve short URL to original URL' })
+  @ApiOperation({ summary: 'Redirect to original URL' })
   @ApiParam({
     name: 'code',
     example: 'abc123',
@@ -47,13 +48,14 @@ export class UrlController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Original URL returned',
+    description: 'Redirect to original URL',
   })
   @ApiResponse({
     status: 404,
     description: 'URL not found or expired',
   })
-  async resolve(@Param('code') code: string) {
-    return this.service.resolve(code);
+  async resolve(@Param('code') code: string, @Res() res: Response) {
+    const url = await this.service.resolve(code);
+    return res.redirect(url);
   }
 }
