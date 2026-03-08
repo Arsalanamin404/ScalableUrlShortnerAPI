@@ -25,7 +25,12 @@ export class RateLimitGuard implements CanActivate {
     const options = this.reflector.get<RateLimitOptions>(
       RATE_LIMIT_KEY,
       context.getHandler(),
-    ) ?? { limit: 10, duration: 60 };
+    );
+
+    // Skip rate limit if decorator not present
+    if (!options) {
+      return true;
+    }
 
     const ctx = context.switchToHttp();
     const req = ctx.getRequest<Request>();

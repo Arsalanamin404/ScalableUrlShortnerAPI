@@ -31,7 +31,37 @@
     },
     "/api/v1/url/{code}": {
       "get": {
-        "operationId": "UrlController_resolve",
+        "operationId": "UrlController_redirect",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "description": "Short code of the URL",
+            "schema": {
+              "example": "abc123",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to original URL"
+          },
+          "404": {
+            "description": "URL not found or expired"
+          }
+        },
+        "summary": "Redirect to original URL",
+        "tags": [
+          "URL"
+        ]
+      }
+    },
+    "/api/v1/analytics/{code}": {
+      "get": {
+        "description": "Returns total click count for the given short code",
+        "operationId": "AnalyticsController_getAnalytics",
         "parameters": [
           {
             "name": "code",
@@ -46,15 +76,25 @@
         ],
         "responses": {
           "200": {
-            "description": "Redirect to original URL"
+            "description": "Analytics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "shortCode": "abc123",
+                    "totalClicks": 42
+                  }
+                }
+              }
+            }
           },
           "404": {
-            "description": "URL not found or expired"
+            "description": "URL not found"
           }
         },
-        "summary": "Redirect to original URL",
+        "summary": "Get analytics for a short URL",
         "tags": [
-          "URL"
+          "Analytics"
         ]
       }
     }
