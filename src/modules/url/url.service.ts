@@ -9,6 +9,7 @@ import { Prisma } from '../../../generated/prisma/client.js';
 import { RedisService } from '../../common/redis/redis.service.js';
 import { PinoLogger } from 'nestjs-pino';
 import { AnalyticsProducer } from '../../common/jobs/analytics/analytics.producer.js';
+import { PrismaService } from '../../prisma/prisma.service.js';
 
 type Url = Awaited<ReturnType<UrlRepository['create']>>;
 
@@ -19,6 +20,7 @@ export class UrlService {
     private readonly redis: RedisService,
     private readonly logger: PinoLogger,
     private readonly analyticsProducer: AnalyticsProducer,
+    private readonly prisma: PrismaService,
   ) {
     this.logger.setContext(UrlService.name);
   }
@@ -40,10 +42,22 @@ export class UrlService {
       const shortCode = nanoid(7);
 
       try {
-        created = await this.repo.create({
-          longUrl,
-          shortCode,
-          expiresAt: expiryDate,
+        created = await this.prisma.$transaction(async (tx) => {
+          // Prisma will automatically do two inserts:
+          // one to insert the URL
+          // another to Insert UrlStats (linked automatically)
+          const url = await tx.url.create({
+            data: {
+              longUrl,
+              shortCode,
+              expiresAt: expiryDate,
+              urlStats: {
+                create: {},
+              },
+            },
+          });
+
+          return url;
         });
         this.logger.info({ shortCode }, 'Short URL created');
         break;
