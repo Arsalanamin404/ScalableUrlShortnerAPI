@@ -8,6 +8,7 @@ import { nanoid } from 'nanoid';
 import { Prisma } from '../../../generated/prisma/client.js';
 import { RedisService } from '../../common/redis/redis.service.js';
 import { PinoLogger } from 'nestjs-pino';
+import { AnalyticsProducer } from '../../common/jobs/analytics/analytics.producer.js';
 
 type Url = Awaited<ReturnType<UrlRepository['create']>>;
 
@@ -17,6 +18,7 @@ export class UrlService {
     private readonly repo: UrlRepository,
     private readonly redis: RedisService,
     private readonly logger: PinoLogger,
+    private readonly analyticsProducer: AnalyticsProducer,
   ) {
     this.logger.setContext(UrlService.name);
   }
@@ -64,7 +66,7 @@ export class UrlService {
     return created;
   }
 
-  async resolve(shortCode: string) {
+  async redirect(shortCode: string, ip?: string, userAgent?: string) {
     const key = `short:${shortCode}`;
 
     this.logger.info({ shortCode }, 'Resolving short URL');
@@ -72,7 +74,19 @@ export class UrlService {
     const cached = await this.redis.get<string>(key);
     if (cached) {
       this.logger.info({ shortCode }, 'Cache hit');
-      return cached;
+      const data = JSON.parse(cached);
+
+      this.analyticsProducer
+        .trackClick({
+          urlId: data.id,
+          ip,
+          userAgent,
+        })
+        .catch((err: unknown) =>
+          this.logger.error({ err }, 'Failed to enqueue analytics job'),
+        );
+
+      return data.longUrl;
     }
 
     this.logger.info({ shortCode }, 'Cache miss, querying DB');
@@ -95,8 +109,24 @@ export class UrlService {
         )
       : undefined;
 
-    await this.redis.set(key, record.longUrl, ttl);
+    const cacheValue = JSON.stringify({
+      id: record.id,
+      longUrl: record.longUrl,
+    });
+
+    await this.redis.set(key, cacheValue, ttl);
+
     this.logger.info({ shortCode, ttl }, 'Cached URL in Redis');
+
+    this.analyticsProducer
+      .trackClick({
+        urlId: record.id,
+        ip,
+        userAgent,
+      })
+      .catch((err: unknown) =>
+        this.logger.error({ err }, 'Failed to enqueue analytics job'),
+      );
 
     return record.longUrl;
   }

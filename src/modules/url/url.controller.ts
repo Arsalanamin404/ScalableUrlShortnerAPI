@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, Res } from '@nestjs/common';
 import { UrlService } from './url.service.js';
 import { CreateUrlDto } from './dto/create-url.dto.js';
 import {
@@ -9,7 +9,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { RateLimit } from '../../common/rate-limit/rate-limit.decorator.js';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 
 @ApiTags('URL')
 @Controller('url')
@@ -47,15 +47,23 @@ export class UrlController {
     description: 'Short code of the URL',
   })
   @ApiResponse({
-    status: 200,
+    status: 302,
     description: 'Redirect to original URL',
   })
   @ApiResponse({
     status: 404,
     description: 'URL not found or expired',
   })
-  async resolve(@Param('code') code: string, @Res() res: Response) {
-    const url = await this.service.resolve(code);
+  async redirect(
+    @Param('code') code: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const url = await this.service.redirect(
+      code,
+      req.ip,
+      req.headers['user-agent'],
+    );
     return res.redirect(url);
   }
 }
