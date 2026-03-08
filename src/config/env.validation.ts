@@ -8,7 +8,15 @@ export const envValidationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'production', 'test')
     .default('development'),
-  REDIS_HOST: Joi.string().required(),
-  REDIS_PORT: Joi.number().required(),
+  REDIS_HOST: Joi.string().when('REDIS_URL', {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
+  }),
+  REDIS_PORT: Joi.number().when('REDIS_URL', {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
+  }),
   REDIS_URL: Joi.string().required(),
 });
