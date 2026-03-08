@@ -13,6 +13,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter.
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
 import { envValidationSchema } from './config/env.validation.js';
 import { AnalyticsModule } from './modules/analytics/analytics.module.js';
+import { HealthModule } from './modules/health/health.module.js';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module.js';
     JobsModule,
     BullConfig,
     AnalyticsModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [

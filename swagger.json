@@ -97,6 +97,32 @@
           "Analytics"
         ]
       }
+    },
+    "/api/v1/health": {
+      "get": {
+        "description": "Checks if the application is running",
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Application is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "ok",
+                    "timestamp": "2026-03-08T10:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Health check",
+        "tags": [
+          "Health"
+        ]
+      }
     }
   },
   "info": {
