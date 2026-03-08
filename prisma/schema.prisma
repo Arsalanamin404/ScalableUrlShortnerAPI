@@ -8,14 +8,38 @@ datasource db {
 }
 
 model Url {
-  id BigInt @id @default(autoincrement())
-
+  id        String    @id @default(uuid())
   shortCode String    @unique
   longUrl   String
   expiresAt DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  clickEvents ClickEvent[]
+  urlStats    UrlStats?
 
-  @@index([shortCode,expiresAt])
+  @@index([shortCode, expiresAt])
+}
+
+model ClickEvent {
+  id        String   @id @default(uuid())
+  urlId     String
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  url Url @relation(fields: [urlId], references: [id])
+
+  @@index([urlId])
+}
+
+model UrlStats {
+  id          String   @id @default(uuid())
+  urlId       String   @unique
+  totalClicks Int      @default(0)
+  updatedAt   DateTime @updatedAt
+
+  url Url @relation(fields: [urlId], references: [id])
+
+  @@index([urlId])
 }

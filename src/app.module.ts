@@ -12,6 +12,7 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter.js';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
 import { envValidationSchema } from './config/env.validation.js';
+import { AnalyticsModule } from './modules/analytics/analytics.module.js';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { envValidationSchema } from './config/env.validation.js';
     RateLimitModule,
     JobsModule,
     BullConfig,
+    AnalyticsModule,
   ],
   controllers: [],
   providers: [
