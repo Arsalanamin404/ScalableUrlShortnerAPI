@@ -31,24 +31,28 @@ The system is designed with **scalability, reliability, and clean architecture**
 * Summary
 
 ---
+---
+
 # Live API
 
-Base URL
+**Base URL**
 
 `https://scalableurlshortnerapi.onrender.com/api/v1`
 
-Swagger Documentation
+**Swagger Documentation**
 
 `https://scalableurlshortnerapi.onrender.com/api/v1/docs`
 
-Health Endpoint
+**Health Endpoint**
 
 `https://scalableurlshortnerapi.onrender.com/api/v1/health`
 
-Example request:
+---
+
+## Example Request
 
 ```bash
-curl -X POST https://your-api-url.com/api/v1/url \
+curl -X POST https://scalableurlshortnerapi.onrender.com/api/v1/url \
 -H "Content-Type: application/json" \
 -d '{"url":"https://google.com"}'
 ```
@@ -162,6 +166,7 @@ POSTGRES_DB=psql_db_name
 DATABASE_URL=postgresql://psql_user_name:psql_pw@postgres:5432/psql_db_name
 REDIS_HOST=redis
 REDIS_PORT=6379
+ENABLE_SWAGGER=true
 ```
 
 ---

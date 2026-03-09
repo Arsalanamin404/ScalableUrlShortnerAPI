@@ -12,11 +12,11 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   const PORT = configService.get<number>('PORT') ?? 3000;
-  const NODE_ENV = configService.get<string>('NODE_ENV');
+  const ENABLE_SWAGGER = configService.get<string>('ENABLE_SWAGGER');
 
   app.setGlobalPrefix('api/v1');
 
-  if (NODE_ENV !== 'production') {
+  if (ENABLE_SWAGGER === 'true') {
     const config = new DocumentBuilder()
       .setTitle('URL Shortener API')
       .setDescription('Production-grade URL shortener with Redis caching')
