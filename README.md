@@ -1,12 +1,63 @@
 # Scalable URL Shortener API
 
-A production-grade backend service for shortening URLs, built with **NestJS, Prisma, PostgreSQL, Redis, and BullMQ**. The system is designed for **high scalability, reliability, and clean architecture**, supporting asynchronous processing, distributed rate limiting, caching, and analytics tracking.
+A **production-grade URL shortening service** built with **NestJS, PostgreSQL, Redis, Prisma, and BullMQ**.
+
+The system is designed with **scalability, reliability, and clean architecture** in mind, using distributed caching, asynchronous job processing, and background workers to handle heavy workloads efficiently.
+
+---
+
+# Table of Contents
+
+* Live API
+* System Architecture
+* Core Features
+* Technology Stack
+* Setup and Installation
+* Environment Variables
+* NanoID Short Code Generation
+* URL Resolution Flow
+* Caching Strategy
+* Analytics Tracking
+* Distributed Rate Limiting
+* Background Processing
+* Cleanup Worker
+* Worker Architecture
+* Performance Benchmark
+* Scaling Strategy
+* API Endpoints
+* API Documentation
+* Failure Handling
+* Project Structure
+* Summary
+
+---
+# Live API
+
+Base URL
+
+`https://scalableurlshortnerapi.onrender.com/api/v1`
+
+Swagger Documentation
+
+`https://scalableurlshortnerapi.onrender.com/api/v1/docs`
+
+Health Endpoint
+
+`https://scalableurlshortnerapi.onrender.com/api/v1/health`
+
+Example request:
+
+```bash
+curl -X POST https://your-api-url.com/api/v1/url \
+-H "Content-Type: application/json" \
+-d '{"url":"https://google.com"}'
+```
 
 ---
 
 # System Architecture
 
-``` bash
+```text
 Client
    ↓
 API Layer (NestJS)
@@ -24,53 +75,107 @@ Background Workers
  └─ Notification Worker (planned)
 ```
 
-The architecture separates synchronous request handling from heavy operations using background workers and queues.
+Heavy operations are delegated to **background workers**, allowing the API to respond quickly while processing analytics and maintenance tasks asynchronously.
 
 ---
 
 # Core Features
 
-* Short URL generation using NanoID
-* Collision handling with retry mechanism
-* Optional expiration support for URLs
-* Fast URL resolution using Redis caching
+* Short URL generation using **NanoID**
+* Collision detection with retry mechanism
+* Optional URL expiration support
+* High-speed URL resolution using **Redis caching**
 * Click analytics tracking
 * Aggregated statistics per URL
-* Distributed rate limiting using Redis
-* Asynchronous job processing using BullMQ
+* Distributed **rate limiting using Redis**
+* **Asynchronous job processing with BullMQ**
 * Background cleanup of expired URLs
-* OpenAPI documentation using Swagger
-* Structured logging using Pino
-* Clean architecture using Service and Repository patterns
-* Strict TypeScript and Prisma type safety
+* OpenAPI documentation via **Swagger**
+* Structured logging using **Pino**
+* Modular architecture using **Service and Repository patterns**
+* Full **TypeScript + Prisma type safety**
 
 ---
 
 # Technology Stack
 
-| Layer         | Technology            |
-| ------------- | --------------------- |
-| API Framework | NestJS                |
-| Database      | PostgreSQL            |
-| ORM           | Prisma                |
-| Cache         | Redis                 |
-| Queue System  | BullMQ                |
-| Rate Limiting | rate-limiter-flexible |
-| Logging       | Pino                  |
-| API Docs      | Swagger               |
+| Layer             | Technology            |
+| ----------------- | --------------------- |
+| API Framework     | NestJS                |
+| Database          | PostgreSQL            |
+| ORM               | Prisma                |
+| Cache             | Redis                 |
+| Queue System      | BullMQ                |
+| Rate Limiting     | rate-limiter-flexible |
+| Logging           | Pino                  |
+| API Documentation | Swagger               |
+
+---
+
+# Setup and Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Arsalanamin404/ScalableUrlShortnerAPI.git
+cd ScalableUrlShortnerAPI
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start required services:
+
+```bash
+docker compose up -d
+```
+
+Run database migrations:
+
+```bash
+npx prisma migrate deploy
+```
+
+Start the application:
+
+```bash
+npm run start:dev
+```
+
+---
+
+# Environment Variables
+
+Example `.env` configuration:
+
+```env
+NODE_ENV=development
+PORT=1234
+VERSION=1.0.0
+APP_NAME=app_name
+POSTGRES_USER=psql_user_name
+POSTGRES_PASSWORD=psql_pw
+POSTGRES_DB=psql_db_name
+DATABASE_URL=postgresql://psql_user_name:psql_pw@postgres:5432/psql_db_name
+REDIS_HOST=redis
+REDIS_PORT=6379
+```
 
 ---
 
 # NanoID-Based Short Code Generation
 
-The system generates short URLs using **NanoID**, which produces secure and URL-safe identifiers.
+The system generates short URLs using **NanoID**, a secure and URL-safe ID generator.
 
 ### Characteristics
 
-* URL-safe random IDs
-* Fixed length of 7 characters
-* Very low collision probability
-* Suitable for high-concurrency environments
+* URL-safe identifiers
+* Fixed length of **7 characters**
+* Extremely low collision probability
+* Suitable for **high-concurrency systems**
 
 ### Collision Handling
 
@@ -78,13 +183,13 @@ If a generated code already exists:
 
 1. The system retries up to **5 times**
 2. Prisma unique constraint error (`P2002`) is detected
-3. A new NanoID is generated and retried
+3. A new NanoID is generated
 
 ---
 
 # URL Resolution Flow
 
-```
+```text
 Client Request
      ↓
 Redis Cache Lookup
@@ -93,92 +198,80 @@ Cache Hit → Immediate Redirect
      ↓
 Cache Miss → Database Query
      ↓
-Cache Result in Redis
+Cache Result Stored in Redis
      ↓
 Redirect to Original URL
      ↓
 Analytics Job Enqueued
 ```
 
-This approach ensures fast responses while capturing analytics asynchronously.
+This ensures **fast redirects while processing analytics asynchronously**.
 
 ---
 
 # Caching Strategy
 
-Redis is used as a **distributed cache** for URL resolution.
+Redis is used as a **distributed caching layer** for URL resolution.
 
-### Pattern Used
+### Pattern
 
 Cache-aside pattern:
 
-1. Check Redis cache
-2. If miss → query database
+1. Check Redis
+2. If cache miss → query database
 3. Store result in Redis
 
 ### Benefits
 
 * Reduced database load
-* Faster URL resolution
-* Better scalability under high traffic
+* Faster response times
+* Improved scalability under heavy traffic
 
 ---
 
 # Analytics Tracking
 
-Each redirect generates an **analytics event** containing:
+Each redirect produces an analytics event containing:
 
 * URL ID
 * IP address
 * User agent
 * Timestamp
 
-Analytics processing is handled asynchronously through BullMQ workers.
+Analytics processing is performed asynchronously using **BullMQ workers**.
 
 ---
 
 # Analytics Storage Design
 
-Analytics data is stored in two forms:
+### Raw Click Events
 
-## Raw Click Events
-
-```
-ClickEvent
-```
-
-Each click stores:
+Each redirect inserts a **ClickEvent** record containing:
 
 * URL identifier
 * IP address
-* User agent
+* user agent
 * timestamp
-
-This allows detailed traffic analysis.
 
 ---
 
-## Aggregated URL Statistics
+### Aggregated Statistics
 
-```
-UrlStats
-```
-
-Stores aggregated metrics:
+The **UrlStats** table stores:
 
 * totalClicks per URL
 * last update timestamp
 
-This allows fast analytics queries without scanning large datasets.
+This enables **fast analytics queries without scanning raw events**.
 
 ---
 
 # Analytics Processing Pipeline
 
-```
+```text
 Redirect Request
       ↓
-AnalyticsProducer
+Analytics Producer
       ↓
 BullMQ Queue
       ↓
@@ -189,59 +282,52 @@ Database Transaction
    └─ Increment UrlStats
 ```
 
-### Advantages
+Advantages:
 
 * Non-blocking redirects
-* Reliable background processing
-* High scalability for analytics ingestion
+* Reliable event processing
+* Scalable analytics ingestion
 
 ---
 
 # Distributed Rate Limiting
 
-Rate limiting protects the API from abuse using **Redis-backed counters**.
+API endpoints are protected using **Redis-backed rate limiting**.
 
 ### Algorithm
 
 Fixed Window Counter
 
-### Key Generation
+### Rate Limit Keys
 
-Rate limits are calculated based on:
+Generated using:
 
-* Authenticated user ID (if available)
+* User ID (if authenticated)
 * Client IP address
-* Route handler
+* API endpoint
 
 ### Behavior
 
-* Each request decrements a counter
-* Requests exceeding the limit return **HTTP 429**
-* Counters expire automatically using Redis TTL
-
-### Example Policy
-
-| Endpoint    | Limit   |
-| ----------- | ------- |
-| Create URL  | Strict  |
-| Resolve URL | Relaxed |
+* Requests decrement a counter
+* When limit is exceeded → **HTTP 429**
+* Redis TTL automatically resets limits
 
 ---
 
 # Background Processing (BullMQ)
 
-BullMQ handles asynchronous tasks to keep API responses fast.
+BullMQ enables asynchronous task execution.
 
 ### Queue Architecture
 
-```
+```text
 Producer → Redis Queue → Worker
 ```
 
 ### Current Queues
 
-* Cleanup Queue
 * Analytics Queue
+* Cleanup Queue
 
 ### Planned Queues
 
@@ -256,7 +342,7 @@ Expired URLs are removed automatically by a scheduled worker.
 
 ### Schedule
 
-Cleanup job runs every:
+Runs every:
 
 ```
 1 hour
@@ -264,56 +350,40 @@ Cleanup job runs every:
 
 ### Processing Strategy
 
-* Batch size: 50 records
-* Iterates until no expired URLs remain
+* Batch size: **50 records**
+* Continues until no expired URLs remain
 
 ### Responsibilities
 
 1. Fetch expired URLs
-2. Delete records from PostgreSQL
-3. Remove cached entries from Redis
+2. Remove from PostgreSQL
+3. Delete cached Redis entries
 
 ---
 
 # Worker Architecture
 
-Workers run **independently from the API server**.
+Workers run independently from the API server.
 
-### Benefits
+Benefits:
 
 * Fault isolation
 * Horizontal scalability
 * Improved performance under load
 
-Workers can be scaled independently depending on traffic.
-
 ---
 
-# Performance Considerations
-
-The system is optimized for high performance:
-
-* Redis caching for fast URL resolution
-* Asynchronous analytics processing
-* Background cleanup jobs
-* Indexed database queries
-* Controlled worker concurrency
-
----
-
-# Benchmark
+# Performance Benchmark
 
 Load testing performed using **Autocannon**.
 
-``` bash
+```bash
 npx autocannon -c 100 -d 10 http://localhost:4000/api/v1/url/fzlhrBX
 ```
 
-This will simulate 100 concurrent users
+Example results:
 
-Example benchmark:
-
-``` bash
+```text
 Concurrency: 100
 Duration: 10 seconds
 
@@ -322,15 +392,13 @@ Average latency: ~11 ms
 p99 latency: ~40 ms
 ```
 
-These results demonstrate the system's ability to handle **high request throughput** efficiently.
+These results demonstrate **high throughput and low latency under concurrent load**.
 
 ---
 
 # Scaling Strategy
 
-API instances can be scaled independently:
-
-```
+```text
 Load Balancer
      ↓
 API Instance 1
@@ -340,7 +408,7 @@ API Instance 3
 Shared Redis + PostgreSQL
 ```
 
-Workers can also be scaled independently for heavy background workloads.
+Workers can also be scaled independently depending on queue workload.
 
 ---
 
@@ -350,7 +418,7 @@ Workers can also be scaled independently for heavy background workloads.
 | ------ | ------------------------- | ------------------------ |
 | POST   | `/api/v1/url`             | Create a short URL       |
 | GET    | `/api/v1/url/:code`       | Redirect to original URL |
-| GET    | `/api/v1/analytics/:code` | Retrieve click analytics |
+| GET    | `/api/v1/analytics/:code` | Retrieve analytics       |
 
 ---
 
@@ -362,30 +430,30 @@ Swagger documentation is available at:
 /api/docs
 ```
 
-Swagger provides:
+Provides:
 
 * Interactive API exploration
-* Request/response examples
+* Request and response examples
 * Schema documentation
 
 ---
 
 # Failure Handling
 
-The system ensures reliability through:
+Reliability mechanisms include:
 
-* BullMQ job retries with exponential backoff
-* Idempotent job design
-* Structured error logging
+* BullMQ retry with exponential backoff
+* Idempotent job processing
+* Structured logging
 * Safe database transactions
 
-Failed jobs can be inspected and retried.
+Failed jobs can be inspected and retried from the queue.
 
 ---
 
 # Project Structure
 
-```bash
+```text
 src
  ├─ modules
  │   ├─ url
@@ -409,13 +477,14 @@ The architecture enforces clear separation between:
 
 # Summary
 
-This project implements a **scalable URL shortener backend** using an event-driven architecture. Redis provides caching and queue infrastructure, BullMQ handles asynchronous workloads, and PostgreSQL stores persistent data.
+This project demonstrates a **scalable backend architecture** for a URL shortener service.
 
-The system supports:
+Key design principles include:
 
-* high read throughput
-* reliable background processing
+* Redis-based caching
+* asynchronous job processing with BullMQ
 * scalable analytics collection
-* clean modular architecture
+* modular NestJS architecture
+* distributed rate limiting
 
-It is designed to perform efficiently under high traffic while maintaining maintainability and operational reliability.
+The system is designed to maintain **high performance and reliability under heavy traffic conditions**.

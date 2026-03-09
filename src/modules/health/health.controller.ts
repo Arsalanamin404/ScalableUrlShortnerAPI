@@ -38,7 +38,7 @@ export class HealthController {
         services: {
           postgres: 'up',
           redis: 'up',
-          },
+        },
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
