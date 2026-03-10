@@ -13,8 +13,14 @@ async function bootstrap() {
 
   const PORT = configService.get<number>('PORT') ?? 3000;
   const ENABLE_SWAGGER = configService.get<string>('ENABLE_SWAGGER');
+  const CORS_ORIGIN = configService.get<string>('CORS_ORIGIN');
 
   app.setGlobalPrefix('api/v1');
+
+  app.enableCors({
+    origin: CORS_ORIGIN?.split(',') || [],
+    credentials: true,
+  });
 
   if (ENABLE_SWAGGER === 'true') {
     const config = new DocumentBuilder()
