@@ -6,10 +6,16 @@ The system is designed with **scalability, reliability, and clean architecture**
 
 ---
 
-# Table of Contents
+## System Architecture
+
+![Architecture Diagram](./assets/architecture.jpeg)
+
+---
+
+## Table of Contents
 
 * Live API
-* System Architecture
+* Architecture Overview
 * Core Features
 * Technology Stack
 * Setup and Installation
@@ -31,9 +37,8 @@ The system is designed with **scalability, reliability, and clean architecture**
 * Summary
 
 ---
----
 
-# Live API
+## Live API
 
 **Base URL**
 
@@ -49,7 +54,7 @@ The system is designed with **scalability, reliability, and clean architecture**
 
 ---
 
-## Example Request
+### Example Request
 
 ```bash
 curl -X POST https://scalableurlshortnerapi.onrender.com/api/v1/url \
@@ -59,7 +64,7 @@ curl -X POST https://scalableurlshortnerapi.onrender.com/api/v1/url \
 
 ---
 
-# System Architecture
+## Architecture Overview
 
 ```text
 Client
@@ -83,7 +88,7 @@ Heavy operations are delegated to **background workers**, allowing the API to re
 
 ---
 
-# Core Features
+## Core Features
 
 * Short URL generation using **NanoID**
 * Collision detection with retry mechanism
@@ -101,7 +106,7 @@ Heavy operations are delegated to **background workers**, allowing the API to re
 
 ---
 
-# Technology Stack
+## Technology Stack
 
 | Layer             | Technology            |
 | ----------------- | --------------------- |
@@ -116,7 +121,7 @@ Heavy operations are delegated to **background workers**, allowing the API to re
 
 ---
 
-# Setup and Installation
+## Setup and Installation
 
 Clone the repository:
 
@@ -151,7 +156,7 @@ npm run start:dev
 
 ---
 
-# Environment Variables
+## Environment Variables
 
 Example `.env` configuration:
 
@@ -171,7 +176,7 @@ ENABLE_SWAGGER=true
 
 ---
 
-# NanoID-Based Short Code Generation
+## NanoID-Based Short Code Generation
 
 The system generates short URLs using **NanoID**, a secure and URL-safe ID generator.
 
@@ -192,7 +197,7 @@ If a generated code already exists:
 
 ---
 
-# URL Resolution Flow
+## URL Resolution Flow
 
 ```text
 Client Request
@@ -214,7 +219,7 @@ This ensures **fast redirects while processing analytics asynchronously**.
 
 ---
 
-# Caching Strategy
+## Caching Strategy
 
 Redis is used as a **distributed caching layer** for URL resolution.
 
@@ -234,7 +239,7 @@ Cache-aside pattern:
 
 ---
 
-# Analytics Tracking
+## Analytics Tracking
 
 Each redirect produces an analytics event containing:
 
@@ -247,7 +252,7 @@ Analytics processing is performed asynchronously using **BullMQ workers**.
 
 ---
 
-# Analytics Storage Design
+## Analytics Storage Design
 
 ### Raw Click Events
 
@@ -271,7 +276,7 @@ This enables **fast analytics queries without scanning raw events**.
 
 ---
 
-# Analytics Processing Pipeline
+## Analytics Processing Pipeline
 
 ```text
 Redirect Request
@@ -295,7 +300,7 @@ Advantages:
 
 ---
 
-# Distributed Rate Limiting
+## Distributed Rate Limiting
 
 API endpoints are protected using **Redis-backed rate limiting**.
 
@@ -319,7 +324,7 @@ Generated using:
 
 ---
 
-# Background Processing (BullMQ)
+## Background Processing (BullMQ)
 
 BullMQ enables asynchronous task execution.
 
@@ -341,7 +346,7 @@ Producer → Redis Queue → Worker
 
 ---
 
-# Cleanup Worker
+## Cleanup Worker
 
 Expired URLs are removed automatically by a scheduled worker.
 
@@ -366,7 +371,7 @@ Runs every:
 
 ---
 
-# Worker Architecture
+## Worker Architecture
 
 Workers run independently from the API server.
 
@@ -378,7 +383,7 @@ Benefits:
 
 ---
 
-# Performance Benchmark
+## Performance Benchmark
 
 Load testing performed using **Autocannon**.
 
@@ -401,7 +406,7 @@ These results demonstrate **high throughput and low latency under concurrent loa
 
 ---
 
-# Scaling Strategy
+## Scaling Strategy
 
 ```text
 Load Balancer
@@ -417,7 +422,7 @@ Workers can also be scaled independently depending on queue workload.
 
 ---
 
-# API Endpoints
+## API Endpoints
 
 | Method | Endpoint                  | Description              |
 | ------ | ------------------------- | ------------------------ |
@@ -427,11 +432,11 @@ Workers can also be scaled independently depending on queue workload.
 
 ---
 
-# API Documentation
+## API Documentation
 
 Swagger documentation is available at:
 
-```
+``` bash
 /api/docs
 ```
 
@@ -443,7 +448,7 @@ Provides:
 
 ---
 
-# Failure Handling
+## Failure Handling
 
 Reliability mechanisms include:
 
@@ -456,7 +461,7 @@ Failed jobs can be inspected and retried from the queue.
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```text
 src
@@ -480,7 +485,7 @@ The architecture enforces clear separation between:
 
 ---
 
-# Summary
+## Summary
 
 This project demonstrates a **scalable backend architecture** for a URL shortener service.
 
